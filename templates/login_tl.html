@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mag-Login - Sistema ng Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Tahanan</a>
+            <a href="{{ url_for('register_page') }}"><i class="fas fa-user-plus"></i> Magrehistro</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="tl" selected>Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-sign-in-alt"></i> Mag-Login</h1>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-exclamation-circle"></i> <span class="message-text">{{ message }}</span>
+                        <br><br>
+                        <p style="font-size: 14px; margin-top: 10px;">
+                            <a href="{{ url_for('register_page') }}" style="color: white; text-decoration: underline; font-weight: bold;">Lumikha ng isa</a>
+                        </p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <form method="POST">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" required>
+                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Mag-Login</button>
+            </form>
+            <p style="margin-top: 20px; font-size: 16px;">
+                Wala ka pang account?
+                <a href="{{ url_for('register_page') }}" style="color: #007bff; text-decoration: none; font-weight: 600;">
+                    <i class="fas fa-user-plus"></i> Magrehistro dito
+                </a>
+            </p>
+        </section>
+    </main>
+   
+    <footer>
+        <p>&copy; 2025 Sistema ng Barangay e-Document. Lahat ng karapatan ay nakalaan.</p>
+    </footer>
+   
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+       
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+
+        // Translate error messages to Tagalog
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageTexts = document.querySelectorAll('.message-text');
+            messageTexts.forEach(msgElement => {
+                const originalMessage = msgElement.textContent.toLowerCase();
+                
+                // Translation mapping
+                const translations = {
+                    'you do not have an account': 'Wala ka pang account',
+                    'invalid credentials': 'Hindi wastong credentials',
+                    'email not found': 'Email ay hindi nahanap',
+                    'incorrect password': 'Maling password',
+                    'account does not exist': 'Ang account ay hindi umiiral',
+                    'please register first': 'Mangyaring magrehistro muna'
+                };
+
+                // Check if message matches any translation
+                for (let [english, tagalog] of Object.entries(translations)) {
+                    if (originalMessage.includes(english)) {
+                        msgElement.textContent = tagalog;
+                        break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

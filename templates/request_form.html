@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Form - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('user_dashboard') }}"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-file-upload"></i> Submit Document Request</h1>
+           
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-{% if category == 'error' %}exclamation-circle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+           
+            <form method="POST" enctype="multipart/form-data">
+                <label for="document_type"><i class="fas fa-file"></i> Document Type <span style="color: red;">*</span></label>
+                <select id="document_type" name="document_type" required>
+                    <option value="">Select Document</option>
+                    <optgroup label="Certificate of indigency">
+                        <option value="Certificate of indigency - educational">Certificate of indigency - educational</option>
+                        <option value="Certificate of indigency - Financial">Certificate of indigency - Financial</option>
+                        <option value="Certificate of indigency - Medical">Certificate of indigency - Medical</option>
+                        <option value="Certificate of indigency - Scholarship">Certificate of indigency - Scholarship</option>
+                    </optgroup>
+                    <option value="Certificate of residencies">Certificate of residencies</option>
+                    <option value="Certificate of solo parent">Certificate of solo parent</option>
+                    <option value="First time job seeker">First time job seeker</option>
+                </select>
+               
+                <div id="requirements" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff;">
+                    <strong>Requirements to Bring:</strong>
+                    <ul id="req-list"></ul>
+                </div>
+               
+                <label for="full_name"><i class="fas fa-user"></i> Full Name <span style="color: red;">*</span></label>
+                <input type="text" id="full_name" name="full_name" placeholder="Full Name (minimum 3 characters)" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be at least 3 characters</small>
+               
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Address <span style="color: red;">*</span></label>
+                <input type="text" id="address" name="address" placeholder="Complete Address (minimum 5 characters)" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be at least 5 characters</small>
+               
+                <label for="contact"><i class="fas fa-phone"></i> Contact Number <span style="color: red;">*</span></label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be exactly 11 digits and start with 09 (e.g., 09123456789)</small>
+               
+                <label for="purpose"><i class="fas fa-comment"></i> Purpose <span style="color: red;">*</span></label>
+                <textarea id="purpose" name="purpose" placeholder="Purpose (minimum 10 characters)" required style="resize: vertical; min-height: 80px;"></textarea>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be at least 10 characters</small>
+               
+                <label for="valid_id"><i class="fas fa-id-card"></i> Valid ID <span style="color: red;">*</span></label>
+                <input type="file" id="valid_id" name="valid_id" accept=".png,.jpg,.jpeg,.pdf" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Accepted formats: PNG, JPG, JPEG, PDF (Max 5MB)</small>
+               
+                <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Submit Request</button>
+            </form>
+            <a href="{{ url_for('user_dashboard') }}" class="btn" style="margin-top: 15px;">Back to Dashboard</a>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. All rights reserved.</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('document_type');
+            select.addEventListener('change', showRequirements);
+        });
+
+        function showRequirements() {
+            const select = document.getElementById('document_type');
+            const reqDiv = document.getElementById('requirements');
+            const reqList = document.getElementById('req-list');
+            reqList.innerHTML = '';
+            if (select.value) {
+                reqDiv.style.display = 'block';
+                let requirements = [];
+                if (select.value.includes('Certificate of indigency')) {
+                    requirements = ['Valid ID (e.g., Driver\'s License, Passport)', 'Proof of Income (e.g., Pay Slip, ITR)', 'Barangay Clearance'];
+                } else if (select.value === 'Certificate of residencies') {
+                    requirements = ['Valid ID', 'Proof of Residence (e.g., Utility Bill)', 'Barangay Clearance'];
+                } else if (select.value === 'Certificate of solo parent') {
+                    requirements = ['Valid ID', 'Birth Certificate of Child', 'Marriage Certificate or Death Certificate of Spouse'];
+                } else if (select.value === 'First time job seeker') {
+                    requirements = ['Valid ID', 'Resume or Curriculum Vitae', 'Proof of Education (e.g., Diploma)'];
+                }
+                requirements.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = req;
+                    reqList.appendChild(li);
+                });
+            } else {
+                reqDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

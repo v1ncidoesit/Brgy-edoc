@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>User Dashboard - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('edit_account') }}"><i class="fas fa-user-edit"></i> Edit Account</a>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en" selected>English</option>
+                    <option value="tl">Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+    <main class="container">
+        <section class="dashboard-content">
+            <h1><i class="fas fa-tachometer-alt"></i> Welcome, {{ fullname }}!</h1>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Requests</h3>
+                    <p>{{ total }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending</h3>
+                    <p>{{ pending }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Completed</h3>
+                    <p>{{ completed }}</p>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-file-upload"></i> Submit Document Request</h2>
+            <form method="POST">
+                <label for="document_type"><i class="fas fa-file"></i> Document Type <span style="color: red;">*</span></label>
+                <select id="document_type" name="document_type" required>
+                    <option value="">Select Document</option>
+                    <optgroup label="Certificate of indigency">
+                        <option value="Certificate of indigency - educational">Certificate of Indigency - Educational</option>
+                        <option value="Certificate of indigency - Financial">Certificate of Indigency - Financial</option>
+                        <option value="Certificate of indigency - Medical">Certificate of Indigency - Medical</option>
+                        <option value="Certificate of indigency - Scholarship">Certificate of Indigency - Scholarship</option>
+                    </optgroup>
+                    <option value="Certificate of residencies">Certificate of Residencies</option>
+                    <option value="Certificate of solo parent">Certificate of Solo Parent</option>
+                    <option value="First time job seeker">First Time Job Seeker</option>
+                    <option value="Barangay Clearance">Barangay Clearance</option>  <!-- Added new option -->
+                </select>
+
+                <div id="requirements" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff;">
+                    <strong>Requirements to Bring:</strong>
+                    <ul id="req-list"></ul>
+                </div>
+
+                <label for="full_name"><i class="fas fa-user"></i> Full Name <span style="color: red;">*</span></label>
+                <input type="text" id="full_name" name="full_name" placeholder="Full Name" value="{{ fullname }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be at least 3 characters</small>
+
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Address <span style="color: red;">*</span></label>
+                <input type="text" id="address" name="address" placeholder="Complete Address" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be at least 5 characters</small>
+
+                <label for="contact"><i class="fas fa-phone"></i> Contact Number <span style="color: red;">*</span></label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" value="{{ user_contact }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be exactly 11 digits starting with 09</small>
+
+                <label for="purpose"><i class="fas fa-comment"></i> Purpose <span style="color: red;">*</span></label>
+                <textarea id="purpose" name="purpose" placeholder="Purpose" required style="resize: vertical; min-height: 80px;"></textarea>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Must be at least 10 characters</small>
+
+                <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Submit Request</button>
+            </form>
+
+            <h2><i class="fas fa-list"></i> Your Requests</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Document Type</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if user_requests %}
+                        {% for req in user_requests %}
+                        <tr>
+                            <td>{{ req['id'] }}</td>
+                            <td>{{ req['document_type'] }}</td>
+                            <td>
+                                {% if req['status'] == 'Pending' %}
+                                    <span style="background: #ffc107; color: #000; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Pending</span>
+                                {% elif req['status'] == 'Processing' %}
+                                    <span style="background: #17a2b8; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Processing</span>
+                                {% elif req['status'] == 'Verifying' %}
+                                    <span style="background: #6f42c1; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Verifying</span>
+                                {% elif req['status'] == 'Ready to be Claim' %}
+                                    <span style="background: #28a745; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Ready to Claim</span>
+                                {% elif req['status'] == 'Completed' %}
+                                    <span style="background: #20c997; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Completed</span>
+                                {% elif req['status'] == 'Rejected' %}
+                                    <span style="background: #dc3545; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Rejected</span>
+                                {% else %}
+                                    <span style="background: #6c757d; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">{{ req['status'] }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req['created_at'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #999;">No requests yet</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('document_type');
+            select.addEventListener('change', showRequirements);
+        });
+
+        function showRequirements() {
+            const select = document.getElementById('document_type');
+            const reqDiv = document.getElementById('requirements');
+            const reqList = document.getElementById('req-list');
+            reqList.innerHTML = '';
+            
+            if (select.value) {
+                reqDiv.style.display = 'block';
+                let requirements = [];
+                
+                if (select.value.includes('Certificate of indigency')) {
+                    requirements = ['Valid ID (e.g., Driver License, Passport)', 'Proof of Income (e.g., Pay Slip, ITR)', 'Barangay Clearance'];
+                } else if (select.value === 'Certificate of residencies') {
+                    requirements = ['Valid ID', 'Proof of Residence (e.g., Utility Bill)', 'Barangay Clearance'];
+                } else if (select.value === 'Certificate of solo parent') {
+                    requirements = ['Valid ID', 'Birth Certificate of Child', 'Marriage Certificate or Death Certificate of Spouse'];
+                } else if (select.value === 'First time job seeker') {
+                    requirements = ['Valid ID', 'Resume or Curriculum Vitae', 'Proof of Education (e.g., Diploma)'];
+                } else if (select.value === 'Barangay Clearance') {  // Added requirements for Barangay Clearance
+                    requirements = ['Valid ID (e.g., Driver\'s License, Passport)', 'Proof of Residence (e.g., Utility Bill)', 'Community Tax Certificate (Cedula)'];
+                }
+                
+                requirements.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = req;
+                    reqList.appendChild(li);
+                });
+            } else {
+                reqDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

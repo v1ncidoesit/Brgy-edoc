@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>All Records - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en" selected>English</option>
+                    <option value="tl">Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1><i class="fas fa-file-alt"></i> All Records</h1>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div style="margin-bottom: 15px;">
+                    {% for category, message in messages %}
+                        <div style="padding: 10px; border-radius: 5px; margin-bottom: 5px;
+                            {% if category == 'success' %}
+                                background-color: #d4edda; color: #155724;
+                            {% elif category == 'warning' %}
+                                background-color: #fff3cd; color: #856404;
+                            {% elif category == 'danger' %}
+                                background-color: #f8d7da; color: #721c24;
+                            {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Filter -->
+        <form method="GET" action="{{ url_for('all_records') }}" style="margin-bottom: 15px;">
+            <label for="status_filter">Filter by Status:</label>
+            <select id="status_filter" name="status" onchange="this.form.submit()">
+                <option value="">All</option>
+                <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Rejected" {% if request.args.get('status') == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </form>
+
+        <!-- Table -->
+        <form method="POST" action="{{ url_for('delete_selected_records') }}">
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Document</th>
+                        <th>Status</th>
+                        <th>Date Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if requests %}
+                        {% for req in requests %}
+                        <tr>
+                            <td><input type="checkbox" name="record_ids" value="{{ req['id'] }}"></td>
+                            <td>{{ req['id'] }}</td>
+                            <td>{{ req['fullname'] }}</td>
+                            <td>{{ req['document_type'] }}</td>
+                            <td>
+                                {% if req['status'] == 'Completed' %}
+                                    <span style="background: #20c997; color: #fff; padding: 5px 8px; border-radius: 4px;">Completed</span>
+                                {% elif req['status'] == 'Rejected' %}
+                                    <span style="background: #dc3545; color: #fff; padding: 5px 8px; border-radius: 4px;">Rejected</span>
+                                {% else %}
+                                    <span style="background: #6c757d; color: #fff; padding: 5px 8px; border-radius: 4px;">{{ req['status'] }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req['date_submitted'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="6" style="text-align:center; color:#777;">No records found.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+
+            <div style="margin-top: 15px;">
+                <button type="submit" onclick="return confirm('Are you sure you want to delete the selected records permanently?');" class="btn">Delete Selected</button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn" style="padding: 10px 15px; background: #007bff; color: #fff;">Go Back to Dashboard</a>
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+
+        // Select All checkbox functionality
+        document.getElementById('select-all').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="record_ids"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    </script>
+</body>
+</html>

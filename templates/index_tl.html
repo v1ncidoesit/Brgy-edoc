@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema ng Hiling ng Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Tahanan</a>
+            <a href="{{ url_for('register_page') }}"><i class="fas fa-user-plus"></i> Magrehistro</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="tl" selected>Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1>Maligayang Pagdating sa Sistema ng Hiling ng Barangay e-Document</h1>
+            <p>Humiling ng mga dokumento ng barangay online nang mabilis at ligtas.</p>
+            <a href="{{ url_for('login_page') }}" class="btn">Magsimula</a>
+        </section>
+    </main>
+   
+    <footer>
+        <p>&copy; 2025 Sistema ng Barangay e-Document. Lahat ng karapatan ay nakalaan. | <a href="#">Patakaran sa Privacy</a> | <a href="#">Makipag-ugnayan Sa Amin</a></p>
+    </footer>
+   
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+       
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+    </script>
+</body>
+</html>

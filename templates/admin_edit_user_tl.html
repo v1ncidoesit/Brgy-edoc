@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I-edit ang User - Admin - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-user-edit"></i> I-edit ang Impormasyon ng User</h1>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <form method="POST">
+                <label for="first_name"><i class="fas fa-user"></i> Unang Pangalan</label>
+                <input type="text" id="first_name" name="first_name" placeholder="Unang Pangalan" value="{{ user[0] }}" required>
+                <label for="last_name"><i class="fas fa-user"></i> Huling Pangalan</label>
+                <input type="text" id="last_name" name="last_name" placeholder="Huling Pangalan" value="{{ user[1] }}" required>
+                <label for="contact"><i class="fas fa-phone"></i> Numero ng Kontak</label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" value="{{ user[2] }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Ang numero ng kontak ay dapat na eksaktong 11 digit at magsimula sa 09 (hal., 09123456789).</small>
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" value="{{ user[3] }}" required>
+                <label for="role"><i class="fas fa-user-tag"></i> Tungkulin</label>
+                <select id="role" name="role" required>
+                    <option value="user" {% if user[4] == 'user' %}selected{% endif %}>Gumagamit</option>
+                    <option value="admin" {% if user[4] == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+                <button type="submit" class="btn"><i class="fas fa-save"></i> I-update ang User</button>
+            </form>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn">Bumalik sa Dashboard</a>
+        </section>
+    </main>
+    <footer>
+        <p>© 2025 Sistema ng Barangay e-Document. Lahat ng karapatan ay nakalaan.</p>
+    </footer>
+</body>
+</html>

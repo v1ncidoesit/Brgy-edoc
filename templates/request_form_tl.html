@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form ng Hiling - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('user_dashboard') }}"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-file-upload"></i> Ipadala ang Hiling ng Dokumento</h1>
+           
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-{% if category == 'error' %}exclamation-circle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+           
+            <form method="POST" enctype="multipart/form-data">
+                <label for="document_type"><i class="fas fa-file"></i> Uri ng Dokumento <span style="color: red;">*</span></label>
+                <select id="document_type" name="document_type" required>
+                    <option value="">Pumili ng Dokumento</option>
+                    <optgroup label="Sertipiko ng Kahirapan">
+                        <option value="Sertipiko ng Kahirapan - edukasyon">Sertipiko ng Kahirapan - edukasyon</option>
+                        <option value="Sertipiko ng Kahirapan - pinansyal">Sertipiko ng Kahirapan - pinansyal</option>
+                        <option value="Sertipiko ng Kahirapan - medikal">Sertipiko ng Kahirapan - medikal</option>
+                        <option value="Sertipiko ng Kahirapan - scholarship">Sertipiko ng Kahirapan - scholarship</option>
+                    </optgroup>
+                    <option value="Sertipiko ng Residensya">Sertipiko ng Residensya</option>
+                    <option value="Sertipiko ng Solo Parent">Sertipiko ng Solo Parent</option>
+                    <option value="Unang Trabaho na Hanapbuhay">Unang Trabaho na Hanapbuhay</option>
+                </select>
+               
+                <div id="requirements" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff;">
+                    <strong>Mga Kailangan na Dalhin:</strong>
+                    <ul id="req-list"></ul>
+                </div>
+               
+                <label for="full_name"><i class="fas fa-user"></i> Buong Pangalan <span style="color: red;">*</span></label>
+                <input type="text" id="full_name" name="full_name" placeholder="Buong Pangalan (minimum 3 characters)" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay hindi bababa sa 3 characters</small>
+               
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Tirahan <span style="color: red;">*</span></label>
+                <input type="text" id="address" name="address" placeholder="Kumpletong Tirahan (minimum 5 characters)" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay hindi bababa sa 5 characters</small>
+               
+                <label for="contact"><i class="fas fa-phone"></i> Numero ng Kontak <span style="color: red;">*</span></label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat na eksaktong 11 digits at magsimula sa 09 (hal., 09123456789)</small>
+               
+                <label for="purpose"><i class="fas fa-comment"></i> Layunin <span style="color: red;">*</span></label>
+                <textarea id="purpose" name="purpose" placeholder="Layunin (minimum 10 characters)" required style="resize: vertical; min-height: 80px;"></textarea>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay hindi bababa sa 10 characters</small>
+               
+                <label for="valid_id"><i class="fas fa-id-card"></i> Balidong ID <span style="color: red;">*</span></label>
+                <input type="file" id="valid_id" name="valid_id" accept=".png,.jpg,.jpeg,.pdf" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Mga Tinatanggap na format: PNG, JPG, JPEG, PDF (Max 5MB)</small>
+               
+                <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Ipadala ang Hiling</button>
+            </form>
+            <a href="{{ url_for('user_dashboard') }}" class="btn" style="margin-top: 15px;">Bumalik sa Dashboard</a>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Sistema ng Barangay e-Document. Lahat ng karapatan ay nakalaan.</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('document_type');
+            select.addEventListener('change', showRequirements);
+        });
+
+        function showRequirements() {
+            const select = document.getElementById('document_type');
+            const reqDiv = document.getElementById('requirements');
+            const reqList = document.getElementById('req-list');
+            reqList.innerHTML = '';
+            if (select.value) {
+                reqDiv.style.display = 'block';
+                let requirements = [];
+                if (select.value.includes('Sertipiko ng Kahirapan')) {
+                    requirements = ['Balidong ID (hal., Driver\'s License, Passport)', 'Patunay ng Kita (hal., Pay Slip, ITR)', 'Barangay Clearance'];
+                } else if (select.value === 'Sertipiko ng Residensya') {
+                    requirements = ['Balidong ID', 'Patunay ng Residensya (hal., Utility Bill)', 'Barangay Clearance'];
+                } else if (select.value === 'Sertipiko ng Solo Parent') {
+                    requirements = ['Balidong ID', 'Birth Certificate ng Bata', 'Marriage Certificate o Death Certificate ng Asawa'];
+                } else if (select.value === 'Unang Trabaho na Hanapbuhay') {
+                    requirements = ['Balidong ID', 'Resume o Curriculum Vitae', 'Patunay ng Edukasyon (hal., Diploma)'];
+                }
+                requirements.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = req;
+                    reqList.appendChild(li);
+                });
+            } else {
+                reqDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

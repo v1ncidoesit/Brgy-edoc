@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Barangay e-Document System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a>
+            <a href="{{ url_for('register_page') }}"><i class="fas fa-user-plus"></i> Register</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en" selected>English</option>
+                    <option value="tl">Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-sign-in-alt"></i> Login</h1>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-exclamation-circle"></i> <span class="message-text">{{ message }}</span>
+                        {% if 'do not have an account' in message.lower() %}
+                        <br><br>
+                        <p style="font-size: 14px; margin-top: 10px;">
+                            <a href="{{ url_for('register_page') }}" style="color: white; text-decoration: underline; font-weight: bold;">Create one</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <form method="POST">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" required>
+                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Login</button>
+            </form>
+            <p style="margin-top: 20px; font-size: 16px;">
+                Don't have an account?
+                <a href="{{ url_for('register_page') }}" style="color: #007bff; text-decoration: none; font-weight: 600;">
+                    <i class="fas fa-user-plus"></i> Register here
+                </a>
+            </p>
+        </section>
+    </main>
+   
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. All rights reserved.</p>
+    </footer>
+   
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+       
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+
+        // Translate error messages to English (ensure no Tagalog appears)
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageTexts = document.querySelectorAll('.message-text');
+            messageTexts.forEach(msgElement => {
+                const originalMessage = msgElement.textContent.toLowerCase();
+                
+                // Translation mapping - convert any Tagalog to English
+                const translations = {
+                    'wala ka pang account': 'You do not have an account',
+                    'wala pang account': 'You do not have an account',
+                    'lumikha ng isa': 'Create one',
+                    'hindi wastong credentials': 'Invalid credentials',
+                    'email ay hindi nahanap': 'Email not found',
+                    'maling password': 'Incorrect password',
+                    'ang account ay hindi umiiral': 'Account does not exist',
+                    'mangyaring magrehistro muna': 'Please register first'
+                };
+
+                // Check if message contains any Tagalog and convert to English
+                for (let [tagalog, english] of Object.entries(translations)) {
+                    if (originalMessage.includes(tagalog)) {
+                        msgElement.textContent = english;
+                        break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

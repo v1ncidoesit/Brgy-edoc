@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Account - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('user_dashboard') }}"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-user-edit"></i> Edit Account Information</h1>
+            <div class="reminder" style="background: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; margin-bottom: 20px; font-size: 14px; color: #333;">
+                <i class="fas fa-info-circle"></i> <strong>Reminder:</strong> Please complete your account information to proceed with document requests and ensure all details are accurate.
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <form method="POST" style="max-width: 600px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;">
+                    <div>
+                        <label for="first_name"><i class="fas fa-user"></i> First Name</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="First Name" value="{{ user[0] if user[0] else '' }}" required>
+                    </div>
+                    <div>
+                        <label for="last_name"><i class="fas fa-user"></i> Last Name</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Last Name" value="{{ user[1] if user[1] else '' }}" required>
+                    </div>
+                </div>
+
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" value="{{ user[3] if user[3] else '' }}" required>
+
+                <label for="contact"><i class="fas fa-phone"></i> Contact Number</label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" value="{{ user[2] if user[2] else '' }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Must be exactly 11 digits and start with 09 (e.g., 09123456789)</small>
+
+                <label for="password"><i class="fas fa-lock"></i> New Password (leave blank to keep current)</label>
+                <input type="password" id="password" name="password" placeholder="New Password">
+
+                <label for="birthdate"><i class="fas fa-calendar"></i> Birthdate</label>
+                <input type="date" id="birthdate" name="birthdate" value="{{ user[4] if user[4] else '' }}" required>
+
+                <label for="civil_status"><i class="fas fa-heart"></i> Civil Status</label>
+                <select id="civil_status" name="civil_status" required>
+                    <option value="">Select Civil Status</option>
+                    <option value="Single" {% if user[5] == 'Single' %}selected{% endif %}>Single</option>
+                    <option value="Married" {% if user[5] == 'Married' %}selected{% endif %}>Married</option>
+                    <option value="Widowed" {% if user[5] == 'Widowed' %}selected{% endif %}>Widowed</option>
+                </select>
+
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Address</label>
+                <input type="text" id="address" name="address" placeholder="Address" value="{{ user[6] if user[6] else '' }}" required>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;">
+                    <div>
+                        <label for="fathers_name"><i class="fas fa-male"></i> Father's Name</label>
+                        <input type="text" id="fathers_name" name="fathers_name" placeholder="Father's Name" value="{{ user[7] if user[7] else '' }}">
+                    </div>
+                    <div>
+                        <label for="mothers_name"><i class="fas fa-female"></i> Mother's Name</label>
+                        <input type="text" id="mothers_name" name="mothers_name" placeholder="Mother's Name" value="{{ user[8] if user[8] else '' }}">
+                    </div>
+                </div>
+
+                <label for="birthplace"><i class="fas fa-globe"></i> Birthplace</label>
+                <input type="text" id="birthplace" name="birthplace" placeholder="Birthplace" value="{{ user[9] if user[9] else '' }}">
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;"><i class="fas fa-save"></i> Update Account</button>
+            </form>
+            <a href="{{ url_for('user_dashboard') }}" class="btn" style="margin-top: 15px; width: 100%; text-align: center;">Back to Dashboard</a>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. All rights reserved.</p>
+    </footer>
+</body>
+</html>

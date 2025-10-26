@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard ng User - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('request_form') }}"><i class="fas fa-file-upload"></i> Ipadala ang Hiling</a>
+            <a href="{{ url_for('status_page') }}"><i class="fas fa-list"></i> Katayuan ng Hiling</a>
+            <a href="{{ url_for('edit_account') }}"><i class="fas fa-user-edit"></i> I-edit ang Account</a>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Mag-Logout</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="tl" selected>Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+    <main class="container">
+        <section class="dashboard-content">
+            <h1><i class="fas fa-tachometer-alt"></i> Maligayang Pagdating, {{ fullname }}!</h1>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Kabuuang Mga Hiling</h3>
+                    <p>{{ total }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Naghihintay</h3>
+                    <p>{{ pending }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Tapos na</h3>
+                    <p>{{ completed }}</p>
+                </div>
+            </div>
+            <h2><i class="fas fa-file-upload"></i> Mabilis na Ipadala ang Hiling</h2>
+            <form method="POST">
+                <label for="document_type"><i class="fas fa-file"></i> Uri ng Dokumento</label>
+                <select id="document_type" name="document_type" required>
+                    <option value="">Pumili ng Dokumento</option>
+                    <optgroup label="Sertipiko ng Kahirapan">
+                        <option value="Sertipiko ng Kahirapan - edukasyon">Sertipiko ng Kahirapan - edukasyon</option>
+                        <option value="Sertipiko ng Kahirapan - pinansyal">Sertipiko ng Kahirapan - pinansyal</option>
+                        <option value="Sertipiko ng Kahirapan - medikal">Sertipiko ng Kahirapan - medikal</option>
+                        <option value="Sertipiko ng Kahirapan - scholarship">Sertipiko ng Kahirapan - scholarship</option>
+                    </optgroup>
+                    <option value="Sertipiko ng Residensya">Sertipiko ng Residensya</option>
+                    <option value="Sertipiko ng Solo Parent">Sertipiko ng Solo Parent</option>
+                    <option value="Unang Trabaho na Hanapbuhay">Unang Trabaho na Hanapbuhay</option>
+                </select>
+                <div id="requirements" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff;">
+                    <strong>Mga Kailangan na Dalhin:</strong>
+                    <ul id="req-list"></ul>
+                </div>
+                <label for="full_name"><i class="fas fa-user"></i> Buong Pangalan</label>
+                <input type="text" id="full_name" name="full_name" placeholder="Buong Pangalan" value="{{ fullname }}" required>
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Tirahan</label>
+                <input type="text" id="address" name="address" placeholder="Tirahan" required>
+                <label for="contact"><i class="fas fa-phone"></i> Numero ng Kontak</label>
+                <input type="text" id="contact" name="contact" placeholder="Numero ng Kontak" value="{{ user_contact }}" required>
+                <label for="purpose"><i class="fas fa-comment"></i> Layunin</label>
+                <textarea id="purpose" name="purpose" placeholder="Layunin" required></textarea>
+                <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Ipadala ang Hiling</button>
+            </form>
+            <h2><i class="fas fa-list"></i> Iyong Mga Hiling</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Uri ng Dokumento</th>
+                        <th>Katayuan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in user_requests %}
+                    <tr>
+                        <td>{{ req.id }}</td>
+                        <td>{{ req.document_type }}</td>
+                        <td>{{ req.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 Sistema ng Barangay e-Document. Lahat ng karapatan ay nakalaan.</p>
+    </footer>
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+       
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('document_type');
+            select.addEventListener('change', showRequirements);
+        });
+
+        function showRequirements() {
+            const select = document.getElementById('document_type');
+            const reqDiv = document.getElementById('requirements');
+            const reqList = document.getElementById('req-list');
+            reqList.innerHTML = '';
+            console.log('Selected value:', select.value);
+            if (select.value) {
+                reqDiv.style.display = 'block';
+                let requirements = [];
+                if (select.value.includes('Sertipiko ng Kahirapan')) {
+                    requirements = ['Balidong ID (hal., Driver\'s License, Passport)', 'Patunay ng Kita (hal., Pay Slip, ITR)', 'Barangay Clearance'];
+                } else if (select.value === 'Sertipiko ng Residensya') {
+                    requirements = ['Balidong ID', 'Patunay ng Residensya (hal., Utility Bill)', 'Barangay Clearance'];
+                } else if (select.value === 'Sertipiko ng Solo Parent') {
+                    requirements = ['Balidong ID', 'Birth Certificate ng Bata', 'Marriage Certificate o Death Certificate ng Asawa'];
+                } else if (select.value === 'Unang Trabaho na Hanapbuhay') {
+                    requirements = ['Balidong ID', 'Resume o Curriculum Vitae', 'Patunay ng Edukasyon (hal., Diploma)'];
+                }
+                requirements.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = req;
+                    reqList.appendChild(li);
+                });
+                console.log('Requirements shown');
+            } else {
+                reqDiv.style.display = 'none';
+                console.log('Requirements hidden');
+            }
+        }
+    </script>
+</body>
+</html>

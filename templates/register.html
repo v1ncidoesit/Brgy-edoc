@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a>
+            <a href="{{ url_for('login_page') }}"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en" selected>English</option>
+                    <option value="tl">Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-user-plus"></i> Create Account</h1>
+            <p>Register to start requesting barangay documents</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <span class="message-text">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <form method="POST" id="registerForm">
+                <label for="first_name"><i class="fas fa-user"></i> First Name</label>
+                <input type="text" id="first_name" name="first_name" placeholder="First Name" required>
+                <label for="last_name"><i class="fas fa-user"></i> Last Name</label>
+                <input type="text" id="last_name" name="last_name" placeholder="Last Name" required>
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" required>
+                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                
+                <div class="password-strength-container">
+                    <div class="password-strength-meter">
+                        <div class="password-strength-meter-fill" id="strengthMeter"></div>
+                    </div>
+                    <div class="password-strength-text" id="strengthText">Enter a password</div>
+                    <ul class="password-requirements">
+                        <li id="req-length">At least 8 characters</li>
+                        <li id="req-uppercase">Contains uppercase letter (A-Z)</li>
+                        <li id="req-lowercase">Contains lowercase letter (a-z)</li>
+                        <li id="req-number">Contains number (0-9)</li>
+                        <li id="req-special">Contains special character (!@#$%^&*)</li>
+                    </ul>
+                </div>
+
+                <label for="confirm_password"><i class="fas fa-lock"></i> Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                <small id="passwordMatch" style="color: #dc3545; font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px;"></small>
+                
+                <button type="submit" class="btn" id="submitBtn" disabled><i class="fas fa-user-plus"></i> Sign Up</button>
+            </form>
+            <p>Already have an account? <a href="{{ url_for('login_page') }}" style="color: #007bff; font-weight: 600;">Sign in</a></p>
+        </section>
+    </main>
+   
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. All rights reserved.</p>
+    </footer>
+   
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+       
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "en") }}';
+
+        // Translate error messages to English
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageTexts = document.querySelectorAll('.message-text');
+            messageTexts.forEach(msgElement => {
+                const originalMessage = msgElement.textContent.toLowerCase();
+                
+                const translations = {
+                    'ang email ay nakalista na': 'Email already exists',
+                    'ang email ay nakaresistro na': 'Email already registered',
+                    'ang mga password ay hindi tugma': 'Passwords do not match',
+                    'ang password ay masyadong maikling': 'Password is too short',
+                    'hindi wastong email': 'Invalid email',
+                    'ang user ay nakalista na': 'User already exists',
+                    'matagumpay na nairesistro': 'Registration successful',
+                    'mangyaring punan ang lahat ng mga pield': 'Please fill all fields',
+                    'matagumpay na nilikha ang account': 'Account created successfully'
+                };
+
+                for (let [tagalog, english] of Object.entries(translations)) {
+                    if (originalMessage.includes(tagalog)) {
+                        msgElement.textContent = english;
+                        break;
+                    }
+                }
+            });
+
+            // Password strength validation
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm_password');
+            const submitBtn = document.getElementById('submitBtn');
+            const strengthMeter = document.getElementById('strengthMeter');
+            const strengthText = document.getElementById('strengthText');
+            const passwordMatch = document.getElementById('passwordMatch');
+
+            const requirements = {
+                'req-length': /^.{8,}$/,
+                'req-uppercase': /[A-Z]/,
+                'req-lowercase': /[a-z]/,
+                'req-number': /[0-9]/,
+                'req-special': /[!@#$%^&*()_+\-=\$\${};':"\\|,.<>\/?]/
+            };
+
+            function validatePassword() {
+                const password = passwordInput.value;
+                let strength = 0;
+                let metRequirements = 0;
+
+                // Check each requirement
+                for (let [id, regex] of Object.entries(requirements)) {
+                    const element = document.getElementById(id);
+                    if (regex.test(password)) {
+                        element.classList.add('met');
+                        strength++;
+                        metRequirements++;
+                    } else {
+                        element.classList.remove('met');
+                    }
+                }
+
+                // Update strength meter
+                strengthMeter.className = 'password-strength-meter-fill';
+                
+                if (password.length === 0) {
+                    strengthText.textContent = 'Enter a password';
+                    strengthText.className = 'password-strength-text';
+                    strengthMeter.classList.remove('weak', 'fair', 'good', 'strong');
+                } else if (strength <= 2) {
+                    strengthText.textContent = 'Weak password';
+                    strengthText.className = 'password-strength-text weak';
+                    strengthMeter.classList.add('weak');
+                } else if (strength <= 3) {
+                    strengthText.textContent = 'Fair password';
+                    strengthText.className = 'password-strength-text fair';
+                    strengthMeter.classList.add('fair');
+                } else if (strength <= 4) {
+                    strengthText.textContent = 'Good password';
+                    strengthText.className = 'password-strength-text good';
+                    strengthMeter.classList.add('good');
+                } else {
+                    strengthText.textContent = 'Strong password';
+                    strengthText.className = 'password-strength-text strong';
+                    strengthMeter.classList.add('strong');
+                }
+
+                validatePasswordMatch();
+                checkFormValidity();
+            }
+
+            function validatePasswordMatch() {
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                if (confirmPassword.length === 0) {
+                    passwordMatch.textContent = '';
+                } else if (password === confirmPassword) {
+                    passwordMatch.textContent = '';
+                    passwordMatch.style.color = '#28a745';
+                } else {
+                    passwordMatch.textContent = 'Passwords do not match';
+                    passwordMatch.style.color = '#dc3545';
+                }
+
+                checkFormValidity();
+            }
+
+            function checkFormValidity() {
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                
+                // Check if all requirements are met
+                let allRequirementsMet = true;
+                for (let [id, regex] of Object.entries(requirements)) {
+                    if (!regex.test(password)) {
+                        allRequirementsMet = false;
+                        break;
+                    }
+                }
+
+                // Enable submit button only if all requirements are met and passwords match
+                if (allRequirementsMet && password === confirmPassword && password.length > 0) {
+                    submitBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = true;
+                }
+            }
+
+            passwordInput.addEventListener('input', validatePassword);
+            confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        });
+    </script>
+</body>
+</html>

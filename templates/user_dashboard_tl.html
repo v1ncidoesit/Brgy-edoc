@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard ng Gumagamit - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('edit_account') }}"><i class="fas fa-user-edit"></i> I-edit ang Account</a>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Mag-logout</a>
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="tl" selected>Filipino</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="dashboard-content">
+            <h1><i class="fas fa-tachometer-alt"></i> Maligayang Pagdating, {{ fullname }}!</h1>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Kabuuang Kahilingan</h3>
+                    <p>{{ total }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Nakahihintay</h3>
+                    <p>{{ pending }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Nakompleto</h3>
+                    <p>{{ completed }}</p>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-file-upload"></i> Magpasa ng Kahilingan ng Dokumento</h2>
+            <form method="POST">
+                <label for="document_type"><i class="fas fa-file"></i> Uri ng Dokumento <span style="color: red;">*</span></label>
+                <select id="document_type" name="document_type" required>
+                    <option value="">Pumili ng Dokumento</option>
+                    <optgroup label="Sertipiko ng Indigency">
+                        <option value="Certificate of indigency - educational">Sertipiko ng Indigency - Pang-Edukasyon</option>
+                        <option value="Certificate of indigency - Financial">Sertipiko ng Indigency - Pinansyal</option>
+                        <option value="Certificate of indigency - Medical">Sertipiko ng Indigency - Medikal</option>
+                        <option value="Certificate of indigency - Scholarship">Sertipiko ng Indigency - Iskolarship</option>
+                    </optgroup>
+                    <option value="Certificate of residencies">Sertipiko ng Paninirahan</option>
+                    <option value="Certificate of solo parent">Sertipiko ng Nag-iisang Magulang</option>
+                    <option value="First time job seeker">Unang Beses na Naghahanap ng Trabaho</option>
+                    <option value="Barangay Clearance">Barangay Clearance</option>
+                </select>
+
+                <div id="requirements" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff;">
+                    <strong>Mga Kailangang Dalhin:</strong>
+                    <ul id="req-list"></ul>
+                </div>
+
+                <label for="full_name"><i class="fas fa-user"></i> Buong Pangalan <span style="color: red;">*</span></label>
+                <input type="text" id="full_name" name="full_name" placeholder="Buong Pangalan" value="{{ fullname }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay hindi bababa sa 3 karakter</small>
+
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Tirahan <span style="color: red;">*</span></label>
+                <input type="text" id="address" name="address" placeholder="Kumpletong Tirahan" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay hindi bababa sa 5 karakter</small>
+
+                <label for="contact"><i class="fas fa-phone"></i> Numero ng Telepono <span style="color: red;">*</span></label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" value="{{ user_contact }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay eksaktong 11 numero at nagsisimula sa 09</small>
+
+                <label for="purpose"><i class="fas fa-comment"></i> Layunin <span style="color: red;">*</span></label>
+                <textarea id="purpose" name="purpose" placeholder="Ilagay ang layunin ng dokumento" required style="resize: vertical; min-height: 80px;"></textarea>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px;"><i class="fas fa-info-circle"></i> Dapat ay hindi bababa sa 10 karakter</small>
+
+                <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> Isumite ang Kahilingan</button>
+            </form>
+
+            <h2><i class="fas fa-list"></i> Iyong mga Kahilingan</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Uri ng Dokumento</th>
+                        <th>Status</th>
+                        <th>Petsa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if user_requests %}
+                        {% for req in user_requests %}
+                        <tr>
+                            <td>{{ req['id'] }}</td>
+                            <td>{{ req['document_type'] }}</td>
+                            <td>
+                                {% if req['status'] == 'Pending' %}
+                                    <span style="background: #ffc107; color: #000; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Nakahihintay</span>
+                                {% elif req['status'] == 'Processing' %}
+                                    <span style="background: #17a2b8; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Pinoproseso</span>
+                                {% elif req['status'] == 'Verifying' %}
+                                    <span style="background: #6f42c1; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Sinusuri</span>
+                                {% elif req['status'] == 'Ready to be Claim' %}
+                                    <span style="background: #28a745; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Handa nang Kunin</span>
+                                {% elif req['status'] == 'Completed' %}
+                                    <span style="background: #20c997; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Nakompleto</span>
+                                {% elif req['status'] == 'Rejected' %}
+                                    <span style="background: #dc3545; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">Tinanggihan</span>
+                                {% else %}
+                                    <span style="background: #6c757d; color: #fff; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;">{{ req['status'] }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req['created_at'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #999;">Wala ka pang kahilingan</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Barangay e-Document System. Lahat ng karapatan ay nakalaan.</p>
+    </footer>
+
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', lang='') }}" + lang;
+        }
+
+        document.getElementById('languageSelect').value = '{{ session.get("lang", "tl") }}';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('document_type');
+            select.addEventListener('change', showRequirements);
+        });
+
+        function showRequirements() {
+            const select = document.getElementById('document_type');
+            const reqDiv = document.getElementById('requirements');
+            const reqList = document.getElementById('req-list');
+            reqList.innerHTML = '';
+            
+            if (select.value) {
+                reqDiv.style.display = 'block';
+                let requirements = [];
+                
+                if (select.value.includes('Certificate of indigency')) {
+                    requirements = ['Valid ID (hal. Lisensya sa Pagmamaneho, Pasaporte)', 'Patunay ng Kita (hal. Payslip o ITR)', 'Barangay Clearance'];
+                } else if (select.value === 'Certificate of residencies') {
+                    requirements = ['Valid ID', 'Patunay ng Paninirahan (hal. Bill ng Kuryente o Tubig)', 'Barangay Clearance'];
+                } else if (select.value === 'Certificate of solo parent') {
+                    requirements = ['Valid ID', 'Birth Certificate ng Anak', 'Marriage o Death Certificate ng Asawa'];
+                } else if (select.value === 'First time job seeker') {
+                    requirements = ['Valid ID', 'Resume o CV', 'Patunay ng Edukasyon (hal. Diploma)'];
+                } else if (select.value === 'Barangay Clearance') {
+                    requirements = ['Valid ID (hal. Lisensya o Pasaporte)', 'Patunay ng Paninirahan (hal. Bill ng Tubig o Kuryente)', 'Community Tax Certificate (Cedula)'];
+                }
+                
+                requirements.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = req;
+                    reqList.appendChild(li);
+                });
+            } else {
+                reqDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I-edit ang Account - Barangay e-Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barangay e-Doc</div>
+        <nav>
+            <a href="{{ url_for('user_dashboard') }}"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </nav>
+    </header>
+    <main class="container center-box">
+        <section class="center-box">
+            <h1><i class="fas fa-user-edit"></i> I-edit ang Impormasyon ng Account</h1>
+            <div class="reminder" style="background: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; margin-bottom: 20px; font-size: 14px; color: #333;">
+                <i class="fas fa-info-circle"></i> <strong>Paalala:</strong> Kumpletuhin ang iyong impormasyon ng account upang magpatuloy sa mga hiling ng dokumento at tiyakin na lahat ng detalye ay tama.
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <form method="POST" style="max-width: 600px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;">
+                    <div>
+                        <label for="first_name"><i class="fas fa-user"></i> Unang Pangalan</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Unang Pangalan" value="{{ user[0] if user[0] else '' }}" required>
+                    </div>
+                    <div>
+                        <label for="last_name"><i class="fas fa-user"></i> Huling Pangalan</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Huling Pangalan" value="{{ user[1] if user[1] else '' }}" required>
+                    </div>
+                </div>
+
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" value="{{ user[3] if user[3] else '' }}" required>
+
+                <label for="contact"><i class="fas fa-phone"></i> Numero ng Kontak</label>
+                <input type="text" id="contact" name="contact" placeholder="09123456789" value="{{ user[2] if user[2] else '' }}" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Dapat na eksaktong 11 digits at magsimula sa 09 (hal., 09123456789)</small>
+
+                <label for="password"><i class="fas fa-lock"></i> Bagong Password (iwanang blangko upang panatilihin)</label>
+                <input type="password" id="password" name="password" placeholder="Bagong Password">
+
+                <label for="birthdate"><i class="fas fa-calendar"></i> Araw ng Kapanganakan</label>
+                <input type="date" id="birthdate" name="birthdate" value="{{ user[4] if user[4] else '' }}" required>
+
+                <label for="civil_status"><i class="fas fa-heart"></i> Estado Sibil</label>
+                <select id="civil_status" name="civil_status" required>
+                    <option value="">Pumili ng Estado Sibil</option>
+                    <option value="Single" {% if user[5] == 'Single' %}selected{% endif %}>Solosolo</option>
+                    <option value="Married" {% if user[5] == 'Married' %}selected{% endif %}>Kasal</option>
+                    <option value="Widowed" {% if user[5] == 'Widowed' %}selected{% endif %}>Biyudo/Biyuda</option>
+                </select>
+
+                <label for="address"><i class="fas fa-map-marker-alt"></i> Tirahan</label>
+                <input type="text" id="address" name="address" placeholder="Tirahan" value="{{ user[6] if user[6] else '' }}" required>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;">
+                    <div>
+                        <label for="fathers_name"><i class="fas fa-male"></i> Pangalan ng Ama</label>
+                        <input type="text" id="fathers_name" name="fathers_name" placeholder="Pangalan ng Ama" value="{{ user[7] if user[7] else '' }}">
+                    </div>
+                    <div>
+                        <label for="mothers_name"><i class="fas fa-female"></i> Pangalan ng Ina</label>
+                        <input type="text" id="mothers_name" name="mothers_name" placeholder="Pangalan ng Ina" value="{{ user[8] if user[8] else '' }}">
+                    </div>
+                </div>
+
+                <label for="birthplace"><i class="fas fa-globe"></i> Lugar ng Kapanganakan</label>
+                <input type="text" id="birthplace" name="birthplace" placeholder="Lugar ng Kapanganakan" value="{{ user[9] if user[9] else '' }}">
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;"><i class="fas fa-save"></i> I-update ang Account</button>
+            </form>
+            <a href="{{ url_for('user_dashboard') }}" class="btn" style="margin-top: 15px; width: 100%; text-align: center;">Bumalik sa Dashboard</a>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Sistema ng Barangay e-Document. Lahat ng karapatan ay nakalaan.</p>
+    </footer>
+</body>
+</html>
