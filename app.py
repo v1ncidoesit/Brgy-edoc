@@ -139,6 +139,7 @@ def login_page():
             session['user_id'] = user['id']
             session['role'] = user['role']
             session['fullname'] = user['fullname']
+            session['email'] = user['email']
 
             if user['role'] == 'admin':
                 return redirect(url_for('admin_dashboard'))
@@ -178,6 +179,7 @@ def register_page():
             session['user_id'] = user['id']
             session['role'] = 'user'
             session['fullname'] = fullname
+            session['email'] = email
 
             flash("Registration successful! Please complete your profile.", "info")
             return redirect(url_for('edit_account'))
