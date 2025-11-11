@@ -528,5 +528,25 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login_page'))
+
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        cur.execute('DELETE FROM users WHERE id = %s', (user_id,))
+        conn.commit()
+        flash('User deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Error deleting user: {str(e)}', 'danger')
+    finally:
+        cur.close()
+        conn.close()
+
+    return redirect(url_for('admin_dashboard'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)

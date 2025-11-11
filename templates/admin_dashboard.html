@@ -103,9 +103,18 @@
                             <td>{{ user['fullname'] }}</td>
                             <td>{{ user['email'] }}</td>
                             <td>
+                                <!-- View User Info -->
                                 <form method="POST" style="display:inline;">
                                     <input type="hidden" name="user_id" value="{{ user['id'] }}">
                                     <button type="submit" name="view_user" class="btn" style="padding: 6px 12px; font-size: 12px;">View Info</button>
+                                </form>
+
+                                <!-- Delete User -->
+                                <form action="{{ url_for('delete_user', user_id=user['id']) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; background:#dc3545; color:white;"
+                                            onclick="return confirm('Are you sure you want to delete this user?')">
+                                        Delete
+                                    </button>
                                 </form>
                             </td>
                         </tr>
