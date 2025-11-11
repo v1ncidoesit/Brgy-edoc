@@ -81,11 +81,11 @@ def init_db():
     ''')
 
     # INSERT ADMIN IF NOT EXISTS
-    admin_email = 'admin@example.com'
+    admin_email = 'adminsislc@domain.com'
     c.execute('SELECT id FROM users WHERE email = %s', (admin_email,))
     admin = c.fetchone()
     if not admin:
-        hashed = generate_password_hash('admin123')
+        hashed = generate_password_hash('S3cr#t@dm1n')
         c.execute('''
             INSERT INTO users (first_name, last_name, fullname, email, password, contact, role)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
